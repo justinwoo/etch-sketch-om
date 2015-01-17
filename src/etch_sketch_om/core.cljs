@@ -90,26 +90,26 @@
          (assoc cursor :y (+ y increment))))))
 
 (def KeyCodes
-  {:h 104
-   :j 106
-   :k 107
-   :l 108})
+  {:h 72 :left 37
+   :j 74 :up 38
+   :k 75 :down 40
+   :l 76 :right 39})
 
 (defn move-cursor [keyCode]
   (let [keyCodes events/KeyCodes
-        {h :h
-         j :j
-         k :k
-         l :l} KeyCodes]
+        {h :h left :left
+         j :j down :down
+         k :k up :up
+         l :l right :right} KeyCodes]
     (cond
-      (= h keyCode) (move-left)
-      (= j keyCode) (move-down)
-      (= k keyCode) (move-up)
-      (= l keyCode) (move-right))))
+      (or (= h keyCode) (= left keyCode)) (move-left)
+      (or (= j keyCode) (= down keyCode)) (move-down)
+      (or (= k keyCode) (= up keyCode)) (move-up)
+      (or (= l keyCode) (= right keyCode)) (move-right))))
 
 (events/listen
   js/document
-  events/EventType.KEYPRESS
+  events/EventType.KEYDOWN
   (fn [e]
     (let [keyCode e.keyCode]
       (swap! app-state assoc
