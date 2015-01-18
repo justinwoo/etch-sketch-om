@@ -1,10 +1,12 @@
 # etch-sketch-om
 
-FIXME: Write a one-line description of your library/project.
+Etch Sketch originally done with JS/React (https://github.com/kimagure/etch-sketch) done with CLJS/Om
+
+Help Wanted: this has some performance issues causing some hangups. If anyone could help me profile where this is going wrong and help me fix it, I'd be grateful.
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+Draws a bunch of SVG rectangles as you move around the cursor with hjkl/LRDU arrow keys
 
 ## Setup
 
@@ -30,8 +32,4 @@ Clean project specific out:
 
 For more info, read [Waitin'](http://swannodette.github.io/2014/12/22/waitin/).
 
-## License
-
-Copyright © 2014 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+...or run `make watch`
