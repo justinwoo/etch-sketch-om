@@ -106,17 +106,22 @@
 
 (defn any-matching [pred coll]
   "return true on any matching predicate, false otherwise"
-  (let [length (count coll)]
-    (cond
-      (= length 0) false
-      (= true (pred (first coll))) true
-      :else (recur pred (rest coll)))))
+  (cond
+    (empty? coll) false
+    (= true (pred (first coll))) true
+    :else (recur pred (rest coll))))
+
+(defn same-point-value [a b]
+  "return true if point values are same, false otherwise"
+  (and
+    (= (:x a) (:x b))
+    (= (:y a) (:y b))))
 
 (defn mark-trail []
   (let [app @app-state
         {cursor :cursor trail :trail} app
         {x :x y :y} cursor]
-  (if (not (any-matching (fn [a] (= cursor a)) trail))
+  (if (not (any-matching (fn [a] (same-point-value cursor a)) trail))
     (swap! app-state assoc :trail (conj trail cursor)))))
 
 (def KeyCodes
