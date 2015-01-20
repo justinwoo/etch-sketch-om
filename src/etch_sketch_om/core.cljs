@@ -5,7 +5,7 @@
 
 (enable-console-print!)
 
-(defn etch-cursor [props]
+(defn etch-point [props]
   "My Etch-Sketch cursor"
   (let [{width :width
          height :height
@@ -20,16 +20,6 @@
                :x x
                :y y
                :fill fill})))))
-
-(defn etch-point [props]
-  "My Etch-Sketch point"
-  (reify om/IRender
-    (render [_]
-      (let [{x :x
-             y :y
-             width :width
-             height :height} props]
-        (dom/rect #js {:x x :y y :width width :height height})))))
 
 (defn etch-trail [props]
   "My Etch-Sketch trail"
@@ -48,7 +38,7 @@
           #js {:width width
                :height height}
           (om/build etch-trail trail)
-          (om/build etch-cursor cursor))))))
+          (om/build etch-point cursor))))))
 
 ;increment that our sketch works off of
 (def increment 10)
@@ -56,7 +46,7 @@
 ;main app state
 (def app-state
   (atom
-    {:svg {:width 800 :height 600}
+    {:svg {:width 800 :height 600 :point-fill "black"}
      :cursor {:x 0 :y 0 :width increment :height increment :fill "grey"}
      :trail []}))
 
@@ -104,13 +94,6 @@
     (if (< y (- height increment))
       (swap! app-state assoc :cursor (assoc cursor :y (+ y increment))))))
 
-(defn any-matching [pred coll]
-  "return true on any matching predicate, false otherwise"
-  (cond
-    (empty? coll) false
-    (= true (pred (first coll))) true
-    :else (recur pred (rest coll))))
-
 (defn same-point-value [a b]
   "return true if point values are same, false otherwise"
   (and
@@ -118,11 +101,13 @@
     (= (:y a) (:y b))))
 
 (defn mark-trail []
+  "add to the trail if the cursor position is unique in the trail"
   (let [app @app-state
-        {cursor :cursor trail :trail} app
+        {cursor :cursor trail :trail svg :svg} app
+        point-fill (:point-fill svg)
         {x :x y :y} cursor]
-  (if (not (any-matching (fn [a] (same-point-value cursor a)) trail))
-    (swap! app-state assoc :trail (conj trail cursor)))))
+  (if (not-any? (fn [a] (same-point-value cursor a)) trail)
+    (swap! app-state assoc :trail (conj trail (assoc cursor :fill point-fill))))))
 
 (def KeyCodes
   {:h 72 :left 37
@@ -131,8 +116,7 @@
    :l 76 :right 39})
 
 (defn handleKeydown [keyCode]
-  (let [keyCodes events/KeyCodes
-        {h :h left :left
+  (let [{h :h left :left
          j :j down :down
          k :k up :up
          l :l right :right} KeyCodes]
