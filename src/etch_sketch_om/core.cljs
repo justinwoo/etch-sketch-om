@@ -6,7 +6,7 @@
 (enable-console-print!)
 
 (defn etch-point [props]
-  "My Etch-Sketch cursor"
+  "My Etch-Sketch point"
   (let [{width :width
          height :height
          x :x
@@ -40,10 +40,10 @@
           (om/build etch-trail trail)
           (om/build etch-point cursor))))))
 
-;increment that our sketch works off of
-(def increment 10)
+(def increment
+  "increment that our sketch works off of"
+  10)
 
-;main app state
 (def app-state
   (atom
     {:svg {:width 800 :height 600 :point-fill "black"}
@@ -60,39 +60,21 @@
   app-state
   {:target (. js/document (getElementById "app"))})
 
-(defn move-left []
-  "move cursor left"
-  (let [app @app-state
-        cursor (:cursor app)
-        x (:x cursor)]
-    (if (> x 0)
-      (swap! app-state assoc :cursor (assoc cursor :x (- x increment))))))
+(def axis-to-dimension
+  "axis to dimension translation hashmap"
+  {:x :width
+   :y :height})
 
-(defn move-right []
-  "move cursor right"
+(defn move-cursor [axis operator]
+  "move cursor by the axis using the operator"
   (let [app @app-state
-        width (:width (:svg app))
-        cursor (:cursor app)
-        x (:x cursor)]
-    (if (< x (- width increment))
-      (swap! app-state assoc :cursor (assoc cursor :x (+ x increment))))))
-
-(defn move-up []
-  "move cursor up"
-  (let [app @app-state
-        cursor (:cursor app)
-        y (:y cursor)]
-    (if (> y 0)
-      (swap! app-state assoc :cursor (assoc cursor :y (- y increment))))))
-
-(defn move-down []
-  "move cursor down"
-  (let [app @app-state
-        height (:height (:svg app))
-        cursor (:cursor app)
-        y (:y cursor)]
-    (if (< y (- height increment))
-      (swap! app-state assoc :cursor (assoc cursor :y (+ y increment))))))
+        {svg :svg cursor :cursor} app
+        dimension (axis-to-dimension axis)
+        limit (dimension svg)
+        value (axis cursor)
+        update (operator value increment)]
+    (if (and (>= update 0) (< update limit))
+      (swap! app-state assoc :cursor (assoc cursor axis update)))))
 
 (defn same-point-value [a b]
   "return true if point values are same, false otherwise"
@@ -110,6 +92,7 @@
     (swap! app-state assoc :trail (conj trail (assoc cursor :fill point-fill))))))
 
 (def KeyCodes
+  "keycodes that we care about for the keydown event"
   {:h 72 :left 37
    :j 74 :up 38
    :k 75 :down 40
@@ -122,10 +105,10 @@
          l :l right :right} KeyCodes]
     (mark-trail)
     (cond
-      (or (= h keyCode) (= left keyCode)) (move-left)
-      (or (= j keyCode) (= down keyCode)) (move-down)
-      (or (= k keyCode) (= up keyCode)) (move-up)
-      (or (= l keyCode) (= right keyCode)) (move-right))))
+      (or (= h keyCode) (= left keyCode)) (move-cursor :x -)
+      (or (= j keyCode) (= down keyCode)) (move-cursor :y +)
+      (or (= k keyCode) (= up keyCode)) (move-cursor :y -)
+      (or (= l keyCode) (= right keyCode)) (move-cursor :x +))))
 
 (events/listen
   js/document
